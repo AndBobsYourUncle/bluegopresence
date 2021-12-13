@@ -1,0 +1,5 @@
+host: 192.168.1.0
+port: 1883
+username: username
+password: password
+topic: name_of_root_topic

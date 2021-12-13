@@ -1,3 +1,4 @@
 .idea/
 bluegopresence
 known_static_devices.yaml
+mqtt_config.yaml
