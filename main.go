@@ -36,7 +36,11 @@ func main() {
 	// Start scanning.
 	println("scanning...")
 	err = adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
-		println("found device:", device.Address.String(), device.RSSI, device.LocalName())
+		for _, knownDevice := range knownStaticDevices.Devices {
+			if knownDevice.MacAddress == device.Address.String() {
+				println("found device:", device.Address.String(), device.RSSI, device.LocalName())
+			}
+		}
 	})
 	must("start scan", err)
 }
