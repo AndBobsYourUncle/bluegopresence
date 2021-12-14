@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 
@@ -14,6 +15,7 @@ var adapter = bluetooth.DefaultAdapter
 
 type KnownDevice struct {
 	MacAddress string `yaml:"mac_address"`
+	Name       string `yaml:"name"`
 }
 
 type KnownStaticDevices struct {
@@ -21,11 +23,17 @@ type KnownStaticDevices struct {
 }
 
 type MqttConfig struct {
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Topic    string `json:"topic"`
+	Host                    string `yaml:"host"`
+	Port                    int    `yaml:"port"`
+	Username                string `yaml:"username"`
+	Password                string `yaml:"password"`
+	Topic                   string `json:"topic"`
+	PublishFrequencySeconds uint64 `json:"publish_frequency_seconds"`
+}
+
+type KnownDeviceTracking struct {
+	Name        string
+	LastPublish time.Time
 }
 
 func main() {
@@ -39,6 +47,12 @@ func main() {
 	err = yaml.Unmarshal(body, &knownStaticDevices)
 	if err != nil {
 		panic("error parsing known_static_devices.yaml")
+	}
+
+	deviceMap := make(map[string]KnownDeviceTracking)
+
+	for _, knownStaticDevice := range knownStaticDevices.Devices {
+		deviceMap[knownStaticDevice.MacAddress] = KnownDeviceTracking{Name: knownStaticDevice.Name}
 	}
 
 	body, err = ioutil.ReadFile("./mqtt_config.yaml")
@@ -73,13 +87,13 @@ func main() {
 	// Start scanning.
 	println("scanning...")
 	err = adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
-		for _, knownDevice := range knownStaticDevices.Devices {
-			if knownDevice.MacAddress == device.Address.String() {
-				text := fmt.Sprintf("%d", device.RSSI)
-				token := client.Publish("bluegopresence/"+mqttConfig.Topic+"/"+knownDevice.MacAddress+"/rssi", 0, false, text)
-				token.Wait()
+		if knownDevice, ok := deviceMap[device.Address.String()]; ok {
+			if time.Now().After(knownDevice.LastPublish.Add(time.Second * time.Duration(mqttConfig.PublishFrequencySeconds))) {
+				knownDevice.LastPublish = time.Now()
 
-				println("found device:", device.Address.String(), device.RSSI, device.LocalName())
+				text := fmt.Sprintf("%d", device.RSSI)
+				token := client.Publish("bluegopresence/"+mqttConfig.Topic+"/"+knownDevice.Name+"/rssi", 0, false, text)
+				token.Wait()
 			}
 		}
 	})

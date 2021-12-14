@@ -1,2 +1,3 @@
 devices:
   - mac_address: 00:00:00:00:00:00
+    name: Some Phone

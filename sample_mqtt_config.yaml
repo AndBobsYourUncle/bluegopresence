@@ -3,3 +3,4 @@ port: 1883
 username: username
 password: password
 topic: name_of_root_topic
+publish_frequency_seconds: 10
