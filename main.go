@@ -88,7 +88,7 @@ func main() {
 	println("scanning...")
 	err = adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
 		if knownDevice, ok := deviceMap[device.Address.String()]; ok {
-			if time.Now().After(knownDevice.LastPublish.Add(time.Second * time.Duration(mqttConfig.PublishFrequencySeconds))) {
+			if time.Now().After(knownDevice.LastPublish.Add(time.Second * 10)) {
 				knownDevice.LastPublish = time.Now()
 
 				text := fmt.Sprintf("%d", device.RSSI)
