@@ -89,9 +89,6 @@ func main() {
 	err = adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
 		if knownDevice, ok := deviceMap[device.Address.String()]; ok {
 			if knownDevice.LastPublish.Add(time.Second * 10).Before(time.Now()) {
-				println(time.Now().String())
-				println(knownDevice.LastPublish.String())
-
 				knownDevice.LastPublish = time.Now()
 
 				text := fmt.Sprintf("%d", device.RSSI)
