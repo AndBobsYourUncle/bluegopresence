@@ -49,10 +49,10 @@ func main() {
 		panic("error parsing known_static_devices.yaml")
 	}
 
-	deviceMap := make(map[string]KnownDeviceTracking)
+	deviceMap := make(map[string]*KnownDeviceTracking)
 
 	for _, knownStaticDevice := range knownStaticDevices.Devices {
-		deviceMap[knownStaticDevice.MacAddress] = KnownDeviceTracking{Name: knownStaticDevice.Name}
+		deviceMap[knownStaticDevice.MacAddress] = &KnownDeviceTracking{Name: knownStaticDevice.Name}
 	}
 
 	body, err = ioutil.ReadFile("./mqtt_config.yaml")
