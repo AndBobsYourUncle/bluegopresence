@@ -88,6 +88,8 @@ func main() {
 	println("scanning...")
 	err = adapter.Scan(func(adapter *bluetooth.Adapter, device bluetooth.ScanResult) {
 		if knownDevice, ok := deviceMap[device.Address.String()]; ok {
+			println(knownDevice.Name)
+
 			if knownDevice.LastPublish.Add(time.Second * 10).Before(time.Now()) {
 				knownDevice.LastPublish = time.Now()
 
